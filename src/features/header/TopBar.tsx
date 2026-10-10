@@ -187,6 +187,12 @@ export function TopBar({ route, syllabus }: { route: Route; syllabus: Syllabus |
                 {theme === 'dark' ? <Sun size={15} /> : <Moon size={15} />}
                 {theme === 'dark' ? 'Light mode' : 'Dark mode'}
               </button>
+              <p
+                className="border-t border-line px-3 pt-2 pb-1 text-[11px] text-muted"
+                title={`Built ${__BUILT_AT__}`}
+              >
+                Version {__BUILD_ID__}
+              </p>
             </div>
           )}
         </HoverPopover>

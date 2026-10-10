@@ -11,6 +11,7 @@ import { TreePanel } from '../features/tree/TreePanel'
 import { QuestionBankPage } from '../features/tests/QuestionBankPage'
 import { TestsPage } from '../features/tests/TestsPage'
 import { ui } from '../ui/styles'
+import { UpdateBanner } from './UpdateBanner'
 import { useRoute, type Route } from './route'
 import { readLocal } from './storage'
 import { useSyllabus, type Syllabus } from './useSyllabus'
@@ -96,6 +97,7 @@ export default function App() {
 
   return (
     <div className="flex h-full flex-col bg-canvas text-ink">
+      <UpdateBanner />
       <TopBar route={route} syllabus={loaded ? syllabus : undefined} />
       <div className="flex min-h-0 flex-1">
         {loaded && <TreePanel route={route} syllabus={syllabus} />}
