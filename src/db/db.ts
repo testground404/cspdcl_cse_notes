@@ -31,12 +31,57 @@ export interface Note {
   updatedAt: number
 }
 
+/** A short point written directly, optionally attached to a syllabus node. */
+export interface KeyPoint {
+  id: string
+  nodeId: string | null
+  text: string
+  createdAt: number
+}
+
+/** A multiple-choice question in the question bank, filed under any syllabus node. */
+export interface Question {
+  id: string
+  nodeId: string | null
+  text: string
+  options: string[]
+  correct: number
+  explanation: string
+  createdAt: number
+  updatedAt: number
+}
+
+export interface TestAnswer {
+  questionId: string
+  chosen: number
+  correct: boolean
+}
+
+export interface TestAttempt {
+  id: string
+  /** null = the whole syllabus. */
+  scopeId: string | null
+  scopeName: string
+  startedAt: number
+  finishedAt: number
+  answers: TestAnswer[]
+}
+
 export const db = new Dexie('cspdcl-cse-notes') as Dexie & {
   nodes: EntityTable<SyllabusNode, 'id'>
   notes: EntityTable<Note, 'topicId'>
+  keyPoints: EntityTable<KeyPoint, 'id'>
+  questions: EntityTable<Question, 'id'>
+  attempts: EntityTable<TestAttempt, 'id'>
 }
 
 db.version(1).stores({
   nodes: '&id, parentId, kind',
   notes: '&topicId, updatedAt',
+})
+
+db.version(2).stores({
+  keyPoints: '&id, nodeId, createdAt',
+  questions: '&id, nodeId, createdAt',
+  attempts: '&id, finishedAt',
 })

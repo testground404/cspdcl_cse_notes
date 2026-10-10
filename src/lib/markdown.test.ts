@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest'
-import { extractSubtopics, renderMarkdown } from './markdown'
+import { extractHighlights, extractSubtopics, highlightId, renderMarkdown } from './markdown'
 
 describe('extractSubtopics', () => {
   test('returns ## headings and skips code fences and other levels', () => {
@@ -34,5 +34,34 @@ describe('renderMarkdown', () => {
     const html = renderMarkdown('<script>alert(1)</script><img src=x onerror=alert(1)>')
     expect(html).not.toContain('<script')
     expect(html).not.toContain('<img')
+  })
+})
+
+describe('highlights', () => {
+  test('extracts ==marked== text with its subtopic, skipping code', () => {
+    const src = [
+      'Intro ==first point==.',
+      '',
+      '## Round Robin',
+      '',
+      'Uses a ==time quantum $q$== and',
+      '`==not this==`',
+      '',
+      '```',
+      '==nor this==',
+      '```',
+    ].join('\n')
+    const hl = extractHighlights(src)
+    expect(hl.map((h) => h.text)).toEqual(['first point', 'time quantum $q$'])
+    expect(hl[0].subtopic).toBeNull()
+    expect(hl[1].subtopic?.title).toBe('Round Robin')
+  })
+
+  test('rendered marks carry ids matching the extraction order', () => {
+    const src = '==a== text ==b==\n\n## S\n\n==c=='
+    const html = renderMarkdown(src)
+    const ids = extractHighlights(src).map((h) => highlightId(h.index))
+    for (const id of ids) expect(html).toContain(`<mark id="${id}">`)
+    expect(ids).toHaveLength(3)
   })
 })

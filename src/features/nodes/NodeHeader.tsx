@@ -1,22 +1,25 @@
-import { useLiveQuery } from 'dexie-react-hooks'
-import { useState, type FormEvent } from 'react'
-import { KIND_LABEL, type SyllabusNode } from '../../db/db'
-import { deleteNode, getPath, moveNode, renameNode } from '../../db/repo'
+import { useState, type FormEvent, type ReactNode } from 'react'
+import type { SyllabusNode } from '../../db/db'
+import { deleteNode, moveNode, renameNode } from '../../db/repo'
 import { nodeHref } from '../../app/route'
+import type { Syllabus } from '../../app/useSyllabus'
+import { Menu } from '../../ui/Menu'
+import { ui } from '../../ui/styles'
 
-const btn =
-  'rounded border border-slate-300 px-2 py-1 text-xs hover:bg-slate-100 dark:border-slate-700 dark:hover:bg-slate-800'
-
-/** Breadcrumb, title and the rename / reorder / delete actions for any node. */
-export function NodeHeader({ node }: { node: SyllabusNode }) {
-  const path = useLiveQuery(() => getPath(node.id), [node.id, node.name]) ?? []
+/** Breadcrumb, title, optional actions, and a ⋯ menu with rename / move / delete. */
+export function NodeHeader({
+  node,
+  syllabus,
+  actions,
+}: {
+  node: SyllabusNode
+  syllabus: Syllabus
+  actions?: ReactNode
+}) {
   const [editing, setEditing] = useState(false)
   const [name, setName] = useState(node.name)
+  const ancestors = syllabus.path(node.id).slice(0, -1)
 
-  const startEdit = () => {
-    setName(node.name)
-    setEditing(true)
-  }
   const submit = async (e: FormEvent) => {
     e.preventDefault()
     if (name.trim()) await renameNode(node.id, name)
@@ -30,77 +33,59 @@ export function NodeHeader({ node }: { node: SyllabusNode }) {
   }
 
   return (
-    <div className="mb-4">
-      <nav aria-label="Breadcrumb" className="mb-1 flex flex-wrap gap-1 text-xs text-slate-500">
-        <a href="#/" className="hover:underline">
-          Home
+    <header className="mb-8">
+      <nav aria-label="Breadcrumb" className="mb-2 flex flex-wrap gap-1.5 text-xs text-muted">
+        <a href="#/" className="hover:text-ink">
+          Notes
         </a>
-        {path.slice(0, -1).map((p) => (
-          <span key={p.id} className="flex gap-1">
-            <span>/</span>
-            <a href={nodeHref(p.id)} className="hover:underline">
+        {ancestors.map((p) => (
+          <span key={p.id} className="flex gap-1.5">
+            <span aria-hidden>›</span>
+            <a href={nodeHref(p.id)} className="hover:text-ink">
               {p.name}
             </a>
           </span>
         ))}
       </nav>
-      <div className="flex flex-wrap items-center gap-2">
-        <span className="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold tracking-wide text-slate-600 uppercase dark:bg-slate-800 dark:text-slate-300">
-          {KIND_LABEL[node.kind]}
-        </span>
-        {editing ? (
-          <form onSubmit={submit} className="flex flex-1 gap-2">
-            <input
-              autoFocus
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              onKeyDown={(e) => e.key === 'Escape' && setEditing(false)}
-              aria-label="Name"
-              className="min-w-0 flex-1 rounded border border-slate-300 bg-white px-2 py-1 text-lg font-semibold dark:border-slate-700 dark:bg-slate-900"
+      {editing ? (
+        <form onSubmit={submit} className="flex max-w-xl gap-2">
+          <input
+            autoFocus
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            onKeyDown={(e) => e.key === 'Escape' && setEditing(false)}
+            aria-label="Name"
+            className={`${ui.input} text-lg font-semibold`}
+          />
+          <button type="submit" className={ui.primary}>
+            Save
+          </button>
+          <button type="button" className={ui.button} onClick={() => setEditing(false)}>
+            Cancel
+          </button>
+        </form>
+      ) : (
+        <div className="flex items-start gap-2">
+          <h1 className={`${ui.h1} min-w-0 flex-1 break-words`}>{node.name}</h1>
+          <div className="flex shrink-0 items-center gap-1">
+            {actions}
+            <Menu
+              items={[
+                {
+                  label: 'Rename',
+                  onSelect: () => {
+                    setName(node.name)
+                    setEditing(true)
+                  },
+                },
+                { label: 'Move up', onSelect: () => void moveNode(node.id, -1) },
+                { label: 'Move down', onSelect: () => void moveNode(node.id, 1) },
+                { label: 'Delete…', onSelect: () => void remove(), danger: true },
+              ]}
             />
-            <button type="submit" className={btn}>
-              Save
-            </button>
-            <button type="button" className={btn} onClick={() => setEditing(false)}>
-              Cancel
-            </button>
-          </form>
-        ) : (
-          <>
-            <h2 className="min-w-0 flex-1 text-xl font-semibold break-words">{node.name}</h2>
-            <div className="flex gap-1">
-              <button type="button" className={btn} onClick={startEdit}>
-                Rename
-              </button>
-              <button
-                type="button"
-                className={btn}
-                onClick={() => moveNode(node.id, -1)}
-                aria-label="Move up"
-                title="Move up"
-              >
-                ↑
-              </button>
-              <button
-                type="button"
-                className={btn}
-                onClick={() => moveNode(node.id, 1)}
-                aria-label="Move down"
-                title="Move down"
-              >
-                ↓
-              </button>
-              <button
-                type="button"
-                className={`${btn} text-red-600 dark:text-red-400`}
-                onClick={remove}
-              >
-                Delete
-              </button>
-            </div>
-          </>
-        )}
-      </div>
-    </div>
+          </div>
+        </div>
+      )}
+    </header>
   )
 }

@@ -1,10 +1,144 @@
 @import 'tailwindcss';
 @plugin '@tailwindcss/typography';
 
+/* Dark mode follows the data-theme attribute set by the theme toggle. */
+@custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
+
+:root {
+  --canvas: #ffffff;
+  --panel: #f7f7f7;
+  --hover: #efefef;
+  --line: #e5e5e5;
+  --ink: #171717;
+  --muted: #737373;
+  --mark: #e8e8e8;
+  --inverse: #ffffff;
+  color-scheme: light;
+}
+
+:root[data-theme='dark'] {
+  --canvas: #0f0f0f;
+  --panel: #161616;
+  --hover: #222222;
+  --line: #2a2a2a;
+  --ink: #ededed;
+  --muted: #8f8f8f;
+  --mark: #333333;
+  --inverse: #0f0f0f;
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-canvas: var(--canvas);
+  --color-panel: var(--panel);
+  --color-hover: var(--hover);
+  --color-line: var(--line);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-mark: var(--mark);
+  --color-inverse: var(--inverse);
+  --font-sans: 'Inter Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-serif: 'Source Serif 4 Variable', ui-serif, Georgia, serif;
+  --font-mono: 'JetBrains Mono Variable', ui-monospace, monospace;
+}
+
 html,
 body,
 #root {
   height: 100%;
+}
+
+body {
+  background: var(--canvas);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Note text: a calm serif reading column, all in shades of grey. */
+.note-content {
+  --tw-prose-body: var(--ink);
+  --tw-prose-headings: var(--ink);
+  --tw-prose-bold: var(--ink);
+  --tw-prose-links: var(--ink);
+  --tw-prose-bullets: var(--muted);
+  --tw-prose-counters: var(--muted);
+  --tw-prose-quotes: var(--muted);
+  --tw-prose-quote-borders: var(--line);
+  --tw-prose-hr: var(--line);
+  --tw-prose-code: var(--ink);
+  --tw-prose-th-borders: var(--line);
+  --tw-prose-td-borders: var(--line);
+  font-family: var(--font-serif);
+  font-size: 17px;
+  line-height: 1.7;
+  max-width: 70ch;
+}
+
+.note-content :where(h1, h2, h3, h4) {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.note-content h2 {
+  scroll-margin-top: 1.5rem;
+}
+
+.note-content :where(code):not(pre code) {
+  background: var(--hover);
+  border-radius: 4px;
+  padding: 0.1em 0.3em;
+  font-weight: 400;
+}
+
+.note-content :where(code):not(pre code)::before,
+.note-content :where(code):not(pre code)::after {
+  content: none;
+}
+
+.note-content pre {
+  background: var(--panel);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  font-size: 14px;
+}
+
+mark {
+  background: var(--mark);
+  color: inherit;
+  border-bottom: 1.5px solid var(--ink);
+  padding: 0 0.1em;
+  scroll-margin-top: 30vh;
+}
+
+mark.flash {
+  animation: flash 1.2s ease-out;
+}
+
+@keyframes flash {
+  from {
+    background: var(--muted);
+  }
+}
+
+/* Monochrome code highlighting: weight and shade instead of colour. */
+.hljs-keyword,
+.hljs-built_in,
+.hljs-type,
+.hljs-title {
+  font-weight: 600;
+}
+.hljs-comment,
+.hljs-quote {
+  color: var(--muted);
+  font-style: italic;
+}
+.hljs-string,
+.hljs-number,
+.hljs-literal {
+  color: var(--muted);
 }
 
 /* Keep KaTeX display math from overflowing narrow screens. */
@@ -13,7 +147,12 @@ body,
   overflow-y: hidden;
 }
 
-/* Leave room above a subtopic heading when jumping to it. */
-.note-content h2 {
-  scroll-margin-top: 1rem;
+.fade-out {
+  animation: fade-out 1.5s ease-in 0.8s forwards;
+}
+
+@keyframes fade-out {
+  to {
+    opacity: 0;
+  }
 }

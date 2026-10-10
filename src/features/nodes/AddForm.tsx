@@ -1,14 +1,18 @@
+import { Plus } from 'lucide-react'
 import { useState, type FormEvent } from 'react'
+import { ui } from '../../ui/styles'
 
+/** A quiet "+ Add …" link that turns into a one-line form. */
 export function AddForm({
+  label,
   placeholder,
-  buttonLabel,
   onAdd,
 }: {
+  label: string
   placeholder: string
-  buttonLabel: string
   onAdd: (name: string) => void | Promise<void>
 }) {
+  const [open, setOpen] = useState(false)
   const [name, setName] = useState('')
   const submit = async (e: FormEvent) => {
     e.preventDefault()
@@ -16,21 +20,38 @@ export function AddForm({
     await onAdd(name)
     setName('')
   }
+  if (!open) {
+    return (
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className={`${ui.button} text-muted hover:text-ink`}
+      >
+        <Plus size={15} /> {label}
+      </button>
+    )
+  }
   return (
-    <form onSubmit={submit} className="flex gap-2">
+    <form onSubmit={submit} className="flex max-w-xl gap-2">
       <input
+        autoFocus
         value={name}
         onChange={(e) => setName(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === 'Escape') {
+            setName('')
+            setOpen(false)
+          }
+        }}
         placeholder={placeholder}
         aria-label={placeholder}
-        className="min-w-0 flex-1 rounded border border-slate-300 bg-white px-3 py-1.5 text-sm dark:border-slate-700 dark:bg-slate-900"
+        className={ui.input}
       />
-      <button
-        type="submit"
-        disabled={!name.trim()}
-        className="rounded bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
-      >
-        {buttonLabel}
+      <button type="submit" disabled={!name.trim()} className={ui.primary}>
+        Add
+      </button>
+      <button type="button" onClick={() => setOpen(false)} className={ui.button}>
+        Done
       </button>
     </form>
   )

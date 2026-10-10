@@ -1,20 +1,26 @@
 import { beforeEach, describe, expect, test } from 'vitest'
 import { db } from './db'
 import {
+  addKeyPoint,
   addNode,
   deleteNode,
   exportBackup,
   getChildren,
   getPath,
   importBackup,
+  getQuestionsInScope,
   moveNode,
+  saveAttempt,
   saveNote,
+  saveQuestion,
+  validateQuestion,
 } from './repo'
 import { seedIfEmpty } from './seed'
 
 beforeEach(async () => {
-  await db.nodes.clear()
-  await db.notes.clear()
+  await Promise.all(
+    [db.nodes, db.notes, db.keyPoints, db.questions, db.attempts].map((t) => t.clear()),
+  )
 })
 
 async function makeTopic() {
@@ -88,4 +94,83 @@ test('seedIfEmpty seeds once', async () => {
   expect(count).toBeGreaterThan(10)
   await seedIfEmpty()
   expect(await db.nodes.count()).toBe(count)
+})
+
+describe('question bank and key points', () => {
+  test('scope includes questions filed anywhere underneath', async () => {
+    const { subject, chapter, topic } = await makeTopic()
+    const other = await addNode(null, 'DBMS')
+    const base = { text: 'Q?', options: ['a', 'b'], correct: 0, explanation: '' }
+    await saveQuestion({ ...base, nodeId: chapter.id })
+    await saveQuestion({ ...base, nodeId: topic.id })
+    await saveQuestion({ ...base, nodeId: other.id })
+    await saveQuestion({ ...base, nodeId: null })
+    expect(await getQuestionsInScope(subject.id)).toHaveLength(2)
+    expect(await getQuestionsInScope(topic.id)).toHaveLength(1)
+    expect(await getQuestionsInScope(null)).toHaveLength(4)
+  })
+
+  test('rejects incomplete questions', async () => {
+    await expect(
+      saveQuestion({ nodeId: null, text: 'Q?', options: ['a', ' '], correct: 0, explanation: '' }),
+    ).rejects.toThrow(/two options/)
+    expect(
+      validateQuestion({
+        nodeId: null,
+        text: ' ',
+        options: ['a', 'b'],
+        correct: 0,
+        explanation: '',
+      }),
+    ).toMatch(/question/)
+  })
+
+  test('deleting a node keeps its key points and questions, unfiled', async () => {
+    const { subject, topic } = await makeTopic()
+    await addKeyPoint('remember this', topic.id)
+    await saveQuestion({
+      nodeId: topic.id,
+      text: 'Q?',
+      options: ['a', 'b'],
+      correct: 1,
+      explanation: '',
+    })
+    await deleteNode(subject.id)
+    expect((await db.keyPoints.toArray()).map((k) => k.nodeId)).toEqual([null])
+    expect((await db.questions.toArray()).map((q) => q.nodeId)).toEqual([null])
+  })
+
+  test('backups include key points, questions and results; v1 backups still import', async () => {
+    const { topic } = await makeTopic()
+    await addKeyPoint('kp', topic.id)
+    const qid = await saveQuestion({
+      nodeId: topic.id,
+      text: 'Q?',
+      options: ['a', 'b'],
+      correct: 0,
+      explanation: '',
+    })
+    await saveAttempt({
+      scopeId: null,
+      scopeName: 'All',
+      startedAt: 1,
+      finishedAt: 2,
+      answers: [{ questionId: qid, chosen: 0, correct: true }],
+    })
+    const backup = JSON.parse(JSON.stringify(await exportBackup()))
+    await importBackup({
+      ...backup,
+      version: 1,
+      keyPoints: undefined,
+      questions: undefined,
+      attempts: undefined,
+    })
+    expect(await db.questions.count()).toBe(0)
+    await importBackup(backup)
+    expect([
+      await db.keyPoints.count(),
+      await db.questions.count(),
+      await db.attempts.count(),
+    ]).toEqual([1, 1, 1])
+  })
 })
