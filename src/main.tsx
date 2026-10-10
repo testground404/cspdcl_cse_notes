@@ -1,6 +1,5 @@
-import '@fontsource-variable/inter'
+import '@fontsource-variable/hanken-grotesk'
 import '@fontsource-variable/jetbrains-mono'
-import '@fontsource-variable/source-serif-4'
 import 'katex/dist/katex.min.css'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'

@@ -20,14 +20,14 @@ const syllabus = buildSyllabus([
 beforeEach(() => localStorage.clear())
 
 describe('TopBar', () => {
-  test('has plain Highlights and Tests links and a Notes menu', () => {
+  test('has Notes, Test and Highlights in the middle and an account menu on the right', () => {
     render(<TopBar route={{ page: 'home' }} syllabus={syllabus} />)
     const nav = screen.getByRole('navigation', { name: 'Main' })
     expect(within(nav).getByRole('link', { name: 'Highlights' })).toHaveAttribute(
       'href',
       '#/highlights',
     )
-    expect(within(nav).getByRole('link', { name: 'Tests' })).toHaveAttribute('href', '#/tests')
+    expect(within(nav).getByRole('link', { name: 'Test' })).toHaveAttribute('href', '#/tests')
     expect(within(nav).getByRole('button', { name: 'Notes' })).toHaveAttribute(
       'aria-expanded',
       'false',
@@ -36,8 +36,17 @@ describe('TopBar', () => {
 
   test('marks the current section', () => {
     render(<TopBar route={{ page: 'bank' }} syllabus={syllabus} />)
-    expect(screen.getByRole('link', { name: 'Tests' })).toHaveAttribute('aria-current', 'page')
+    expect(screen.getByRole('link', { name: 'Test' })).toHaveAttribute('aria-current', 'page')
     expect(screen.getByRole('link', { name: 'Highlights' })).not.toHaveAttribute('aria-current')
+  })
+
+  test('the account menu offers backup, restore and the theme toggle', () => {
+    render(<TopBar route={{ page: 'home' }} syllabus={syllabus} />)
+    fireEvent.click(screen.getByRole('button', { name: 'Account and settings' }))
+    const menu = document.getElementById('account-menu')!
+    expect(within(menu).getByRole('button', { name: /Back up everything/ })).toBeInTheDocument()
+    expect(within(menu).getByRole('button', { name: /Restore a backup/ })).toBeInTheDocument()
+    expect(within(menu).getByRole('button', { name: /Dark mode|Light mode/ })).toBeInTheDocument()
   })
 
   test('the Notes menu lists only subjects, opens on click and closes on Escape', () => {
@@ -72,6 +81,6 @@ describe('TopBar', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Open menu' }))
     const nav = screen.getByRole('navigation', { name: 'Main (mobile)' })
     expect(within(nav).getByRole('link', { name: 'Highlights' })).toBeInTheDocument()
-    expect(within(nav).getByRole('link', { name: 'Tests' })).toBeInTheDocument()
+    expect(within(nav).getByRole('link', { name: 'Test' })).toBeInTheDocument()
   })
 })

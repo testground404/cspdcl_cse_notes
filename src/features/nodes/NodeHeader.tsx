@@ -11,10 +11,15 @@ export function NodeHeader({
   node,
   syllabus,
   actions,
+  large = false,
+  subtitle,
 }: {
   node: SyllabusNode
   syllabus: Syllabus
   actions?: ReactNode
+  /** The big page-title style used at the top of a note. */
+  large?: boolean
+  subtitle?: string
 }) {
   const [editing, setEditing] = useState(false)
   const [name, setName] = useState(node.name)
@@ -66,7 +71,9 @@ export function NodeHeader({
         </form>
       ) : (
         <div className="flex items-start gap-2">
-          <h1 className={`${ui.h1} min-w-0 flex-1 break-words`}>{node.name}</h1>
+          <h1 className={`${large ? ui.h1Large : ui.h1} min-w-0 flex-1 break-words`}>
+            {node.name}
+          </h1>
           <div className="flex shrink-0 items-center gap-1">
             {actions}
             <Menu
@@ -85,6 +92,9 @@ export function NodeHeader({
             />
           </div>
         </div>
+      )}
+      {subtitle && !editing && (
+        <p className="mt-3 max-w-3xl text-[15px] leading-relaxed text-body">{subtitle}</p>
       )}
     </header>
   )

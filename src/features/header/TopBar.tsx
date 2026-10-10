@@ -1,16 +1,27 @@
-import { ChevronDown, Download, Menu as MenuIcon, Moon, Sun, Upload, X } from 'lucide-react'
-import { useEffect, useRef, useState, type FocusEvent } from 'react'
+import {
+  ChevronDown,
+  Download,
+  Infinity as Logo,
+  Menu as MenuIcon,
+  Moon,
+  Sun,
+  Upload,
+  User,
+  X,
+} from 'lucide-react'
+import { useState } from 'react'
 import { nodeHref, type Route } from '../../app/route'
 import { useTheme } from '../../app/theme'
 import type { Syllabus } from '../../app/useSyllabus'
+import { HoverPopover } from '../../ui/Popover'
 import { ui } from '../../ui/styles'
 import { useBackup } from '../backup/useBackup'
 
-const CLOSE_DELAY_MS = 200
+export const APP_NAME = 'Synapse Notes'
 
 const navLink = (active: boolean) =>
-  `rounded-md px-2.5 py-1.5 text-sm ${
-    active ? 'font-medium text-ink' : 'text-muted hover:text-ink'
+  `py-1 text-[14px] transition-colors ${
+    active ? 'font-semibold text-ink' : 'font-normal text-muted hover:text-ink'
   }`
 
 function SubjectLinks({
@@ -34,8 +45,8 @@ function SubjectLinks({
                 onClick={onNavigate}
                 title={s.name}
                 aria-current={currentSubject === s.id ? 'page' : undefined}
-                className={`block truncate rounded-md px-3 py-1.5 text-sm hover:bg-hover ${
-                  currentSubject === s.id ? 'bg-hover font-medium' : ''
+                className={`block truncate rounded-md px-3 py-1.5 text-[13px] hover:bg-hover ${
+                  currentSubject === s.id ? 'bg-hover font-semibold text-ink' : 'text-body'
                 }`}
               >
                 {s.name}
@@ -44,7 +55,7 @@ function SubjectLinks({
           ))}
         </ul>
       ) : (
-        <p className="px-3 py-1.5 text-sm text-muted">No subjects yet.</p>
+        <p className="px-3 py-1.5 text-[13px] text-muted">No subjects yet.</p>
       )}
       <a
         href="#/"
@@ -57,90 +68,7 @@ function SubjectLinks({
   )
 }
 
-/**
- * "Notes ▾" with the subject list. Opens on mouse hover, and on click, tap or keyboard so it
- * also works where there is no hover.
- */
-function NotesMenu({
-  syllabus,
-  active,
-  currentSubject,
-}: {
-  syllabus: Syllabus
-  active: boolean
-  currentSubject: string | undefined
-}) {
-  const [open, setOpen] = useState(false)
-  const ref = useRef<HTMLDivElement>(null)
-  const timer = useRef<number | undefined>(undefined)
-
-  const cancelClose = () => window.clearTimeout(timer.current)
-  const closeSoon = () => {
-    cancelClose()
-    timer.current = window.setTimeout(() => setOpen(false), CLOSE_DELAY_MS)
-  }
-  useEffect(() => cancelClose, [])
-
-  useEffect(() => {
-    if (!open) return
-    const onMouseDown = (e: MouseEvent) => {
-      if (!ref.current?.contains(e.target as Node)) setOpen(false)
-    }
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setOpen(false)
-    document.addEventListener('mousedown', onMouseDown)
-    document.addEventListener('keydown', onKey)
-    return () => {
-      document.removeEventListener('mousedown', onMouseDown)
-      document.removeEventListener('keydown', onKey)
-    }
-  }, [open])
-
-  return (
-    <div
-      ref={ref}
-      className="relative"
-      onPointerEnter={(e) => {
-        if (e.pointerType !== 'mouse') return
-        cancelClose()
-        setOpen(true)
-      }}
-      onPointerLeave={(e) => e.pointerType === 'mouse' && closeSoon()}
-      onBlur={(e: FocusEvent) => {
-        if (!e.currentTarget.contains(e.relatedTarget)) setOpen(false)
-      }}
-    >
-      <button
-        type="button"
-        aria-expanded={open}
-        aria-controls="notes-menu"
-        // After hovering, a mouse click should not slam the menu shut again.
-        onClick={(e) =>
-          (e.nativeEvent as PointerEvent).pointerType === 'mouse'
-            ? setOpen(true)
-            : setOpen((o) => !o)
-        }
-        className={`${navLink(active)} inline-flex items-center gap-1`}
-      >
-        Notes
-        <ChevronDown
-          size={14}
-          className={`transition-transform duration-150 ${open ? 'rotate-180' : ''}`}
-        />
-      </button>
-      {open && (
-        <div id="notes-menu" className="absolute top-full left-0 z-30 pt-1">
-          <div className="max-h-[70vh] w-72 overflow-y-auto rounded-lg border border-line bg-canvas p-1 shadow-sm">
-            <SubjectLinks
-              syllabus={syllabus}
-              currentSubject={currentSubject}
-              onNavigate={() => setOpen(false)}
-            />
-          </div>
-        </div>
-      )}
-    </div>
-  )
-}
+const panelBox = 'rounded-xl border border-line bg-canvas p-1.5 shadow-lg'
 
 export function TopBar({ route, syllabus }: { route: Route; syllabus: Syllabus | undefined }) {
   const [mobileOpen, setMobileOpen] = useState(false)
@@ -149,57 +77,69 @@ export function TopBar({ route, syllabus }: { route: Route; syllabus: Syllabus |
 
   const currentSubject = route.page === 'node' ? syllabus?.subjectOf(route.nodeId)?.id : undefined
   const notesActive = route.page === 'home' || route.page === 'node'
+  const testActive = route.page === 'tests' || route.page === 'bank'
   const closeMobile = () => setMobileOpen(false)
 
-  const actions = (
-    <>
-      <button
-        type="button"
-        onClick={download}
-        className={`${ui.button} text-xs text-muted`}
-        title="Download all data as a file"
-      >
-        <Download size={14} /> Backup
-      </button>
-      <button
-        type="button"
-        onClick={chooseRestoreFile}
-        className={`${ui.button} text-xs text-muted`}
-      >
-        <Upload size={14} /> Restore
-      </button>
-      <button
-        type="button"
-        onClick={toggleTheme}
-        className={`${ui.button} text-muted`}
-        aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-        title={theme === 'dark' ? 'Light mode' : 'Dark mode'}
-      >
-        {theme === 'dark' ? <Sun size={15} /> : <Moon size={15} />}
-      </button>
-    </>
-  )
+  const itemClass =
+    'flex w-full items-center gap-2 rounded-lg px-3 py-1.5 text-left text-[13px] text-body hover:bg-hover hover:text-ink'
 
   return (
-    <header className="relative z-20 flex h-12 shrink-0 items-center gap-2 border-b border-line bg-canvas px-3 md:px-4">
-      <button
-        type="button"
-        className="rounded-md p-1.5 text-muted hover:bg-hover md:hidden"
-        onClick={() => setMobileOpen((o) => !o)}
-        aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
-        aria-expanded={mobileOpen}
-      >
-        {mobileOpen ? (
-          <X size={20} strokeWidth={1.75} />
-        ) : (
-          <MenuIcon size={20} strokeWidth={1.75} />
-        )}
-      </button>
-      <a href="#/" onClick={closeMobile} className="mr-4 text-[15px] font-semibold tracking-tight">
-        CSPDCL CSE Notes
-      </a>
+    <header className="relative z-30 flex h-16 shrink-0 items-center justify-between gap-4 border-b border-line bg-canvas/95 px-4 backdrop-blur md:px-6">
+      <div className="flex min-w-max items-center gap-2">
+        <button
+          type="button"
+          className="rounded-md p-1.5 text-muted hover:bg-hover md:hidden"
+          onClick={() => setMobileOpen((o) => !o)}
+          aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
+          aria-expanded={mobileOpen}
+        >
+          {mobileOpen ? (
+            <X size={20} strokeWidth={1.75} />
+          ) : (
+            <MenuIcon size={20} strokeWidth={1.75} />
+          )}
+        </button>
+        <a href="#/" onClick={closeMobile} className="flex items-center gap-2.5">
+          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-ink text-inverse shadow-sm">
+            <Logo size={19} strokeWidth={2} />
+          </span>
+          <span className="text-[17px] font-semibold tracking-tight text-ink">{APP_NAME}</span>
+        </a>
+      </div>
 
-      <nav aria-label="Main" className="hidden items-center gap-1 md:flex">
+      <nav aria-label="Main" className="hidden items-center gap-6 md:flex">
+        {syllabus && (
+          <HoverPopover
+            id="notes-menu"
+            buttonClassName={`${navLink(notesActive)} inline-flex items-center gap-1`}
+            button={(open) => (
+              <>
+                Notes
+                <ChevronDown
+                  size={14}
+                  className={`text-muted transition-transform duration-150 ${open ? 'rotate-180' : ''}`}
+                />
+              </>
+            )}
+          >
+            {(close) => (
+              <div className={`${panelBox} max-h-[70vh] w-72 overflow-y-auto`}>
+                <SubjectLinks
+                  syllabus={syllabus}
+                  currentSubject={currentSubject}
+                  onNavigate={close}
+                />
+              </div>
+            )}
+          </HoverPopover>
+        )}
+        <a
+          href="#/tests"
+          className={navLink(testActive)}
+          aria-current={testActive ? 'page' : undefined}
+        >
+          Test
+        </a>
         <a
           href="#/highlights"
           className={navLink(route.page === 'highlights')}
@@ -207,37 +147,68 @@ export function TopBar({ route, syllabus }: { route: Route; syllabus: Syllabus |
         >
           Highlights
         </a>
-        <a
-          href="#/tests"
-          className={navLink(route.page === 'tests' || route.page === 'bank')}
-          aria-current={route.page === 'tests' || route.page === 'bank' ? 'page' : undefined}
-        >
-          Tests
-        </a>
-        {syllabus && (
-          <NotesMenu syllabus={syllabus} active={notesActive} currentSubject={currentSubject} />
-        )}
       </nav>
 
-      <div className="ml-auto hidden items-center gap-1 md:flex">{actions}</div>
-      {restoreInput}
+      <div className="flex min-w-max items-center">
+        <HoverPopover
+          id="account-menu"
+          label="Account and settings"
+          align="right"
+          buttonClassName="flex h-8 w-8 items-center justify-center rounded-full border border-line bg-soft text-ink transition-colors hover:bg-ink hover:text-inverse"
+          button={() => <User size={17} strokeWidth={1.75} />}
+        >
+          {(close) => (
+            <div className={`${panelBox} w-52`}>
+              <button
+                type="button"
+                className={itemClass}
+                onClick={() => {
+                  close()
+                  void download()
+                }}
+              >
+                <Download size={15} /> Back up everything
+              </button>
+              <button
+                type="button"
+                className={itemClass}
+                onClick={() => {
+                  close()
+                  chooseRestoreFile()
+                }}
+              >
+                <Upload size={15} /> Restore a backup
+              </button>
+              <button
+                type="button"
+                className={`${itemClass} border-t border-line`}
+                onClick={toggleTheme}
+              >
+                {theme === 'dark' ? <Sun size={15} /> : <Moon size={15} />}
+                {theme === 'dark' ? 'Light mode' : 'Dark mode'}
+              </button>
+            </div>
+          )}
+        </HoverPopover>
+        {restoreInput}
+      </div>
 
       {mobileOpen && (
-        <div className="fixed inset-x-0 top-12 bottom-0 z-30 overflow-y-auto bg-canvas p-4 md:hidden">
+        <div className="fixed inset-x-0 top-16 bottom-0 z-30 overflow-y-auto bg-canvas p-4 md:hidden">
           <nav aria-label="Main (mobile)" className="mb-4 flex flex-col">
+            <a
+              href="#/tests"
+              onClick={closeMobile}
+              className="rounded-md px-3 py-2 text-[15px] hover:bg-hover"
+            >
+              Test
+            </a>
             <a
               href="#/highlights"
               onClick={closeMobile}
               className="rounded-md px-3 py-2 text-[15px] hover:bg-hover"
             >
               Highlights
-            </a>
-            <a
-              href="#/tests"
-              onClick={closeMobile}
-              className="rounded-md px-3 py-2 text-[15px] hover:bg-hover"
-            >
-              Tests
             </a>
           </nav>
           <h2 className={`${ui.sectionLabel} mb-1 px-3`}>Notes</h2>
@@ -248,7 +219,6 @@ export function TopBar({ route, syllabus }: { route: Route; syllabus: Syllabus |
               onNavigate={closeMobile}
             />
           )}
-          <div className="mt-6 flex items-center gap-1 border-t border-line pt-3">{actions}</div>
         </div>
       )}
     </header>

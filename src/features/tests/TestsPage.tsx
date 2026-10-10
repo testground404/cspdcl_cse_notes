@@ -19,8 +19,18 @@ interface Run {
   answers: TestAnswer[]
 }
 
-function Setup({ syllabus, onStart }: { syllabus: Syllabus; onStart: (run: Run) => void }) {
-  const [scopeId, setScopeId] = useState<string | null>(null)
+function Setup({
+  syllabus,
+  initialScopeId,
+  onStart,
+}: {
+  syllabus: Syllabus
+  initialScopeId: string | null
+  onStart: (run: Run) => void
+}) {
+  const [scopeId, setScopeId] = useState<string | null>(
+    initialScopeId && syllabus.nodes.has(initialScopeId) ? initialScopeId : null,
+  )
   const [count, setCount] = useState(10)
   const available = useLiveQuery(async () => (await getQuestionsInScope(scopeId)).length, [scopeId])
   const total = available
@@ -283,7 +293,7 @@ function History() {
   )
 }
 
-export function TestsPage({ syllabus }: { syllabus: Syllabus }) {
+export function TestsPage({ syllabus, scopeId }: { syllabus: Syllabus; scopeId: string | null }) {
   const [run, setRun] = useState<Run | null>(null)
   const [finished, setFinished] = useState<TestAnswer[] | null>(null)
 
@@ -321,7 +331,7 @@ export function TestsPage({ syllabus }: { syllabus: Syllabus }) {
       </div>
       {!run ? (
         <>
-          <Setup syllabus={syllabus} onStart={setRun} />
+          <Setup syllabus={syllabus} initialScopeId={scopeId} onStart={setRun} />
           <History />
         </>
       ) : finished ? (

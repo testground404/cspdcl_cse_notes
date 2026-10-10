@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { CHILD_KIND } from '../db/db'
 import { seedIfEmpty } from '../db/seed'
 import { LAST_BACKUP_KEY } from '../features/backup/useBackup'
@@ -15,11 +15,19 @@ import { useRoute, type Route } from './route'
 import { readLocal } from './storage'
 import { useSyllabus, type Syllabus } from './useSyllabus'
 
+function PageContainer({ children }: { children: ReactNode }) {
+  return (
+    <div className="mx-auto w-full max-w-[1400px] px-5 pt-6 pb-24 md:px-10 md:pt-10">
+      <div className="max-w-5xl">{children}</div>
+    </div>
+  )
+}
+
 function Home({ syllabus }: { syllabus: Syllabus }) {
   const lastBackup = readLocal<string | null>(LAST_BACKUP_KEY, null)
   return (
     <div>
-      <h1 className={`${ui.h1} mb-2`}>Notes</h1>
+      <h1 className={`${ui.h1Large} mb-2`}>Notes</h1>
       <p className={`${ui.muted} mb-8 max-w-2xl`}>
         Subject › Unit › Chapter › Topic. Each topic has one note; its <code>##</code> headings are
         subtopics. Everything is saved in this browser. Last backup:{' '}
@@ -53,20 +61,18 @@ function NodePage({
     return (
       <TopicNote
         key={node.id}
-        topicId={node.id}
+        node={node}
+        syllabus={syllabus}
         subtopic={route.subtopic}
         highlight={route.highlight}
-        renderHeader={(actions) => (
-          <NodeHeader key={node.id} node={node} syllabus={syllabus} actions={actions} />
-        )}
       />
     )
   }
   return (
-    <div>
+    <PageContainer>
       <NodeHeader key={node.id} node={node} syllabus={syllabus} />
       <ChildList parentId={node.id} childKind={childKind} syllabus={syllabus} />
-    </div>
+    </PageContainer>
   )
 }
 
@@ -93,21 +99,27 @@ export default function App() {
       <TopBar route={route} syllabus={loaded ? syllabus : undefined} />
       <div className="flex min-h-0 flex-1">
         {loaded && <TreePanel route={route} syllabus={syllabus} />}
-        <main className="min-h-0 min-w-0 flex-1 overflow-y-auto px-5 pt-6 pb-24 md:px-12 md:pt-10">
-          <div className="mx-auto max-w-5xl">
-            {loaded &&
-              (route.page === 'node' ? (
-                <NodePage route={route} syllabus={syllabus} />
-              ) : route.page === 'highlights' ? (
-                <HighlightsPage syllabus={syllabus} />
-              ) : route.page === 'tests' ? (
-                <TestsPage syllabus={syllabus} />
-              ) : route.page === 'bank' ? (
-                <QuestionBankPage syllabus={syllabus} />
-              ) : (
-                <Home syllabus={syllabus} />
-              ))}
-          </div>
+        <main className="min-h-0 min-w-0 flex-1 overflow-y-auto">
+          {loaded &&
+            (route.page === 'node' ? (
+              <NodePage route={route} syllabus={syllabus} />
+            ) : (
+              <PageContainer>
+                {route.page === 'highlights' ? (
+                  <HighlightsPage syllabus={syllabus} />
+                ) : route.page === 'tests' ? (
+                  <TestsPage
+                    key={route.scopeId ?? ''}
+                    syllabus={syllabus}
+                    scopeId={route.scopeId}
+                  />
+                ) : route.page === 'bank' ? (
+                  <QuestionBankPage syllabus={syllabus} />
+                ) : (
+                  <Home syllabus={syllabus} />
+                )}
+              </PageContainer>
+            ))}
         </main>
       </div>
     </div>

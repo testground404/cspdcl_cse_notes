@@ -1,10 +1,11 @@
 import { expect, test } from 'vitest'
-import { highlightHref, nodeHref, parseHash } from './route'
+import { highlightHref, nodeHref, parseHash, testHref } from './route'
 
 test('parses every route and round-trips hrefs', () => {
   expect(parseHash('')).toEqual({ page: 'home' })
   expect(parseHash('#/highlights')).toEqual({ page: 'highlights' })
-  expect(parseHash('#/tests')).toEqual({ page: 'tests' })
+  expect(parseHash('#/tests')).toEqual({ page: 'tests', scopeId: null })
+  expect(parseHash(testHref('a b'))).toEqual({ page: 'tests', scopeId: 'a b' })
   expect(parseHash('#/tests/bank')).toEqual({ page: 'bank' })
   expect(parseHash(nodeHref('a b'))).toEqual({
     page: 'node',

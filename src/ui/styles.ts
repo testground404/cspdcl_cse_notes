@@ -11,7 +11,8 @@ export const ui = {
   select:
     'rounded-md border border-line bg-canvas px-2.5 py-1.5 text-sm text-ink focus:border-ink focus:outline-none',
   label: 'mb-1 block text-xs font-medium text-muted',
-  sectionLabel: 'text-[11px] font-semibold tracking-[0.08em] text-muted uppercase',
+  sectionLabel: 'text-[11px] font-bold tracking-widest text-muted uppercase',
   h1: 'text-2xl font-semibold tracking-tight text-ink',
+  h1Large: 'text-3xl font-bold tracking-tight text-ink md:text-4xl',
   muted: 'text-sm text-muted',
 }

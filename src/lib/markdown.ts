@@ -31,6 +31,20 @@ export function stripFrontMatter(source: string): string {
   return source.slice(match[0].length)
 }
 
+/** The `key: value` pairs of a note's `---` metadata block (empty when there is none). */
+export function readFrontMatter(source: string): Record<string, string> {
+  const match = source.match(FRONT_MATTER)
+  if (!match || !match[1].split(/\r?\n/).every((line) => META_LINE.test(line))) return {}
+  const meta: Record<string, string> = {}
+  for (const line of match[1].split(/\r?\n/)) {
+    const pair = line.match(/^([\w-]+)\s*:\s*(.*)$/)
+    if (!pair) continue
+    const value = pair[2].trim().replace(/^(["'])(.*)\1$/, '$2')
+    meta[pair[1]] = value === '[]' ? '' : value
+  }
+  return meta
+}
+
 const md = new MarkdownIt({
   html: false,
   linkify: true,

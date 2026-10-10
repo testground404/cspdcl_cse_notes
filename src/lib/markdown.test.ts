@@ -1,6 +1,12 @@
 import { describe, expect, test } from 'vitest'
 import mlNote from '../seed/ml-definition-and-scope.md?raw'
-import { extractHighlights, extractSubtopics, highlightId, renderMarkdown } from './markdown'
+import {
+  readFrontMatter,
+  extractHighlights,
+  extractSubtopics,
+  highlightId,
+  renderMarkdown,
+} from './markdown'
 
 describe('extractSubtopics', () => {
   test('returns ## and ### headings with their level and skips code fences', () => {
@@ -154,5 +160,25 @@ describe('the Machine Learning placeholder note', () => {
     expect(subtopics.map((s) => s.title)).toContain('The formal definition (Mitchell, 1997)')
     expect(new Set(subtopics.map((s) => s.slug)).size).toBe(subtopics.length)
     for (const s of subtopics) expect(html).toContain(`id="${s.slug}"`)
+  })
+})
+
+describe('readFrontMatter', () => {
+  test('reads key/value pairs, unquotes values and drops empty lists', () => {
+    const meta = readFrontMatter(
+      '---\nid: U0.C1.T1\ntitle: Definition and scope\nsyllabus_ref: "Foundational scope"\nprerequisites: []\ncritique_score: 90\n---\n\nBody',
+    )
+    expect(meta).toEqual({
+      id: 'U0.C1.T1',
+      title: 'Definition and scope',
+      syllabus_ref: 'Foundational scope',
+      prerequisites: '',
+      critique_score: '90',
+    })
+  })
+
+  test('is empty when there is no metadata block', () => {
+    expect(readFrontMatter('# Title\n\ntext')).toEqual({})
+    expect(readFrontMatter('---\n\nHello\n\n---\n')).toEqual({})
   })
 })

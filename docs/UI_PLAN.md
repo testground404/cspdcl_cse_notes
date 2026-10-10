@@ -1,6 +1,6 @@
 # UI Refresh Plan: simple, minimal, calm
 
-Status: approved (decisions in §7); steps 1–3 being built
+Status: built. Later superseded in layout and styling by the supplied mockup (top bar with Notes / Test / Highlights, contents column, numbered sections); see the README for the current design.
 
 ## 1. Design principles
 

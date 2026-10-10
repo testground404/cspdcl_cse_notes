@@ -97,6 +97,14 @@ describe('TreePanel', () => {
     expect(screen.getByRole('link', { name: 'Unit 1' })).toBeInTheDocument()
   })
 
+  test('can be hidden and shown again', () => {
+    render(<TreePanel route={at('Round Robin')} syllabus={syllabus} />)
+    fireEvent.click(screen.getByRole('button', { name: 'Hide contents' }))
+    expect(screen.queryByRole('link', { name: 'Unit 1' })).not.toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Show contents' }))
+    expect(screen.getByRole('link', { name: 'Unit 1' })).toBeInTheDocument()
+  })
+
   test('asks for a subject when none has been visited', () => {
     render(<TreePanel route={{ page: 'home' }} syllabus={syllabus} />)
     expect(screen.getByText(/Choose a subject/)).toBeInTheDocument()

@@ -61,7 +61,7 @@ export function renderDiagrams(root: HTMLElement, theme: DiagramTheme): Promise<
       securityLevel: 'strict',
       theme: 'base',
       themeVariables: VARIABLES[theme],
-      fontFamily: "'Inter Variable', system-ui, sans-serif",
+      fontFamily: "'Hanken Grotesk Variable', system-ui, sans-serif",
     })
     for (const { el, source } of pending) {
       if (!el.isConnected) continue
