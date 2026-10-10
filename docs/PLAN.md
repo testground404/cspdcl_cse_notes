@@ -1,6 +1,6 @@
 # Note Management App: Plan
 
-Status: approved (decisions in §2), Phase 0 in progress · Repo: `cspdcl_cse_notes`
+Status: approved (decisions in §2). Phase 0 done; first working version of Phase 1 shipped · Repo: `cspdcl_cse_notes`
 
 ## 1. Goal
 
@@ -39,7 +39,7 @@ this well. This app should:
 | #   | Feature                                                                                                                | Priority |
 | --- | ---------------------------------------------------------------------------------------------------------------------- | -------- |
 | F1  | Create, edit and delete notes in a Markdown editor with live preview (KaTeX math, syntax highlighting, tables, images) | P0       |
-| F2  | Syllabus tree: Subject → Unit → Topic; every note belongs to one topic                                                 | P0       |
+| F2  | Syllabus tree: Subject → Unit → Chapter → Topic → Subtopics; one note per topic, its `##` headings are the subtopics   | P0       |
 | F3  | Tags (e.g. `formula`, `important`, `pyq-2019`, `doubt`)                                                                | P0       |
 | F4  | Full-text search with filters (subject, tag, status)                                                                   | P0       |
 | F5  | Autosave and offline storage                                                                                           | P0       |
@@ -112,12 +112,13 @@ the benefit of both.
 ## 5. Data model
 
 ```ts
-Subject   { id, name, order, color }
-Unit      { id, subjectId, name, order }
-Topic     { id, unitId, name, order, status: 'not_started'|'reading'|'done'|'revised',
-            lastRevisedAt? }
-Note      { id, topicId, title, body /* markdown */, tags: string[],
-            pinned: boolean, createdAt, updatedAt, deletedAt? /* soft delete */ }
+// Built so far (v1): one table for the whole tree, one note per topic.
+SyllabusNode { id, parentId, kind: 'subject'|'unit'|'chapter'|'topic', name, order }
+Note         { topicId, body /* markdown; its ## headings are the subtopics */, updatedAt }
+
+// Planned additions
+SyllabusNode += { status?: 'not_started'|'reading'|'done'|'revised', lastRevisedAt? }  // topics
+Note         += { tags: string[], pinned: boolean, createdAt }
 Card      { id, noteId, front, back, /* SM-2 */ ease, interval, reps, dueAt }
 Review    { id, cardId, grade: 0..5, reviewedAt }
 Pyq       { id, topicId, year, exam, question, options?, answer, explanation?,
@@ -126,10 +127,12 @@ Attachment{ id, noteId, mime, blob }        // pasted images
 Meta      { key, value }                    // schema version, settings
 ```
 
-Dexie indexes: `notes: id, topicId, *tags, updatedAt`, `cards: id, noteId, dueAt`,
-`pyqs: id, topicId, year`.
-IDs are ULIDs, so they sort by time and can be created offline without collisions
-(this matters for sync later).
+Dexie indexes (v1): `nodes: &id, parentId, kind`, `notes: &topicId, updatedAt`.
+Later: `*tags` on notes, `cards: id, noteId, dueAt`, `pyqs: id, topicId, year`.
+IDs are random UUIDs, so they can be created offline without collisions.
+
+Subtopics are not stored separately: they are read from the note's `##` headings, so
+reordering or renaming a subtopic is just editing the note.
 
 Cards are **derived** from note text. Every time a note is saved, the app parses
 its `Q:: A` lines and updates the matching cards, using a hash of the question

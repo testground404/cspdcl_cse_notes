@@ -1,7 +1,19 @@
 @import 'tailwindcss';
+@plugin '@tailwindcss/typography';
 
 html,
 body,
 #root {
   height: 100%;
+}
+
+/* Keep KaTeX display math from overflowing narrow screens. */
+.katex-display {
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+/* Leave room above a subtopic heading when jumping to it. */
+.note-content h2 {
+  scroll-margin-top: 1rem;
 }

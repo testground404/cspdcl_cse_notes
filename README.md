@@ -15,5 +15,14 @@ npm run format     # Prettier
 npm run build      # production build in dist/
 ```
 
-Pushes to `main` are deployed to GitHub Pages by `.github/workflows/ci.yml`
-(enable Pages with source "GitHub Actions" in the repository settings).
+Pushes to the repository's default branch are deployed to GitHub Pages by
+`.github/workflows/ci.yml` (enable Pages with source "GitHub Actions" in the repository
+settings). The site is at https://testground404.github.io/cspdcl_cse_notes/.
+
+## Using the app
+
+- Notes are organised as **Subject → Unit → Chapter → Topic**. Each topic has one
+  Markdown note, and its `##` headings are the topic's **subtopics** (shown in the sidebar).
+- Notes support Markdown, LaTeX math (`$x^2$`, `$$...$$`) and fenced code blocks.
+- Everything is saved automatically in the browser (IndexedDB). Use **Backup** to download
+  a JSON file and **Restore** to load one; clearing browser data deletes your notes.
