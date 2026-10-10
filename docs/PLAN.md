@@ -15,6 +15,7 @@ this well. This app should:
 - work offline on a laptop and a phone.
 
 ### Non-goals for v1
+
 - Real-time multi-user collaboration
 - Native mobile apps (the PWA covers mobile)
 - Rich WYSIWYG editing (Markdown with live preview is enough)
@@ -35,25 +36,26 @@ this well. This app should:
 
 ## 3. Features
 
-| # | Feature | Priority |
-|---|---------|----------|
-| F1 | Create, edit and delete notes in a Markdown editor with live preview (KaTeX math, syntax highlighting, tables, images) | P0 |
-| F2 | Syllabus tree: Subject → Unit → Topic; every note belongs to one topic | P0 |
-| F3 | Tags (e.g. `formula`, `important`, `pyq-2019`, `doubt`) | P0 |
-| F4 | Full-text search with filters (subject, tag, status) | P0 |
-| F5 | Autosave and offline storage | P0 |
-| F6 | Export and import: a single note or everything as Markdown files or a ZIP; full JSON backup | P0 |
-| F7 | Topic status: *not started → reading → done → revised*, plus a syllabus progress dashboard | P1 |
-| F8 | Flashcards: `Q:: A` lines or `??` blocks inside a note become cards automatically | P1 |
-| F9 | Spaced-repetition review queue (SM-2 algorithm) with a daily "due today" view | P1 |
-| F10 | PYQ bank: store questions with year and answer, linked to topics; a practice mode | P1 |
-| F11 | Links between notes (`[[Note title]]`) and a list of backlinks | P2 |
-| F12 | Print/PDF export of a subject as a revision booklet | P2 |
-| F13 | Cloud sync across devices plus login (deferred; not planned) | — |
-| F15 | Import uploaded files: PDF/Word text extraction into notes, PDFs kept as attachments | P2 |
-| F14 | Dark mode and keyboard shortcuts (`Ctrl+K` search, `Ctrl+N` new note) | P1 |
+| #   | Feature                                                                                                                | Priority |
+| --- | ---------------------------------------------------------------------------------------------------------------------- | -------- |
+| F1  | Create, edit and delete notes in a Markdown editor with live preview (KaTeX math, syntax highlighting, tables, images) | P0       |
+| F2  | Syllabus tree: Subject → Unit → Topic; every note belongs to one topic                                                 | P0       |
+| F3  | Tags (e.g. `formula`, `important`, `pyq-2019`, `doubt`)                                                                | P0       |
+| F4  | Full-text search with filters (subject, tag, status)                                                                   | P0       |
+| F5  | Autosave and offline storage                                                                                           | P0       |
+| F6  | Export and import: a single note or everything as Markdown files or a ZIP; full JSON backup                            | P0       |
+| F7  | Topic status: _not started → reading → done → revised_, plus a syllabus progress dashboard                             | P1       |
+| F8  | Flashcards: `Q:: A` lines or `??` blocks inside a note become cards automatically                                      | P1       |
+| F9  | Spaced-repetition review queue (SM-2 algorithm) with a daily "due today" view                                          | P1       |
+| F10 | PYQ bank: store questions with year and answer, linked to topics; a practice mode                                      | P1       |
+| F11 | Links between notes (`[[Note title]]`) and a list of backlinks                                                         | P2       |
+| F12 | Print/PDF export of a subject as a revision booklet                                                                    | P2       |
+| F13 | Cloud sync across devices plus login (deferred; not planned)                                                           | —        |
+| F15 | Import uploaded files: PDF/Word text extraction into notes, PDFs kept as attachments                                   | P2       |
+| F14 | Dark mode and keyboard shortcuts (`Ctrl+K` search, `Ctrl+N` new note)                                                  | P1       |
 
 ### Pre-seeded syllabus (editable)
+
 Data Structures · Algorithms · Operating Systems · DBMS · Computer Networks ·
 Theory of Computation · Compiler Design · Computer Organisation & Architecture ·
 Digital Logic · Software Engineering · Discrete Mathematics · Programming (C/C++/Java) ·
@@ -80,22 +82,23 @@ timestamps are chosen so it could be added later without a rewrite.
 
 ### Tech stack
 
-| Concern | Choice | Why |
-|---|---|---|
-| Build | Vite + TypeScript | Fast and simple; easy static hosting |
-| UI | React + Tailwind CSS | Common choice with many components available |
-| Editor | CodeMirror 6 (Markdown mode) | Lightweight, works well on mobile, supports Vim keys if wanted |
-| Rendering | markdown-it + KaTeX + highlight.js, sanitised with DOMPurify | Handles math and code; output is safe |
-| Storage | Dexie.js over IndexedDB | Typed tables, indexes and schema migrations |
-| Search | MiniSearch | Full-text with fuzzy and prefix matching; fine for thousands of notes |
-| State | Zustand | Small with little boilerplate |
-| Routing | React Router | |
-| Offline | vite-plugin-pwa (Workbox) | Installable app with offline cache |
-| Testing | Vitest + Testing Library, Playwright for e2e | |
-| Lint/format | ESLint + Prettier | |
-| Hosting | GitHub Pages or Netlify (static) | Free; deploys from CI |
+| Concern     | Choice                                                       | Why                                                                   |
+| ----------- | ------------------------------------------------------------ | --------------------------------------------------------------------- |
+| Build       | Vite + TypeScript                                            | Fast and simple; easy static hosting                                  |
+| UI          | React + Tailwind CSS                                         | Common choice with many components available                          |
+| Editor      | CodeMirror 6 (Markdown mode)                                 | Lightweight, works well on mobile, supports Vim keys if wanted        |
+| Rendering   | markdown-it + KaTeX + highlight.js, sanitised with DOMPurify | Handles math and code; output is safe                                 |
+| Storage     | Dexie.js over IndexedDB                                      | Typed tables, indexes and schema migrations                           |
+| Search      | MiniSearch                                                   | Full-text with fuzzy and prefix matching; fine for thousands of notes |
+| State       | Zustand                                                      | Small with little boilerplate                                         |
+| Routing     | React Router                                                 |                                                                       |
+| Offline     | vite-plugin-pwa (Workbox)                                    | Installable app with offline cache                                    |
+| Testing     | Vitest + Testing Library, Playwright for e2e                 |                                                                       |
+| Lint/format | oxlint + Prettier                                            |                                                                       |
+| Hosting     | GitHub Pages or Netlify (static)                             | Free; deploys from CI                                                 |
 
 **Alternatives I considered:**
+
 - Keeping plain Markdown files in this repo and building a static site (MkDocs or
   Docusaurus). This is the simplest option and versioned by git, but there is no
   in-app editing, progress tracking or spaced repetition.
@@ -156,13 +159,13 @@ text as a stable key so review history survives edits.
 
 ## 7. Milestones
 
-| Phase | Scope | Done when | Estimate* |
-|---|---|---|---|
-| **0. Setup** | Vite+TS scaffold, lint/format, Vitest, CI, Pages deploy, app shell layout | An empty app deploys from `main` | 0.5 day |
-| **1. Core notes (MVP)** | F1, F2, F3, F5, F14 (basic): Dexie schema, syllabus seed, tree sidebar, editor with preview, autosave, tags, soft delete and trash | I can write all my OS notes offline and they are still there after a reload | 3–4 days |
-| **2. Find & keep** | F4 search palette and filters, F6 export/import (MD/ZIP/JSON), PWA install and offline | Searching finds any note in under 100 ms; a backup restores everything exactly | 2 days |
-| **3. Revise** | F7 progress dashboard, F8 card parser, F9 SM-2 review queue, F10 PYQ bank and practice | A daily review session works from start to finish; the dashboard shows % covered per subject | 3–4 days |
-| **4. Extras** | F11 backlinks, F12 PDF booklet, F15 file import | A PDF can be uploaded and turned into a note | 3–4 days |
+| Phase                   | Scope                                                                                                                              | Done when                                                                                    | Estimate* |
+| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- | --------- |
+| **0. Setup**            | Vite+TS scaffold, lint/format, Vitest, CI, Pages deploy, app shell layout                                                          | An empty app deploys from `main`                                                             | 0.5 day   |
+| **1. Core notes (MVP)** | F1, F2, F3, F5, F14 (basic): Dexie schema, syllabus seed, tree sidebar, editor with preview, autosave, tags, soft delete and trash | I can write all my OS notes offline and they are still there after a reload                  | 3–4 days  |
+| **2. Find & keep**      | F4 search palette and filters, F6 export/import (MD/ZIP/JSON), PWA install and offline                                             | Searching finds any note in under 100 ms; a backup restores everything exactly               | 2 days    |
+| **3. Revise**           | F7 progress dashboard, F8 card parser, F9 SM-2 review queue, F10 PYQ bank and practice                                             | A daily review session works from start to finish; the dashboard shows % covered per subject | 3–4 days  |
+| **4. Extras**           | F11 backlinks, F12 PDF booklet, F15 file import                                                                                    | A PDF can be uploaded and turned into a note                                                 | 3–4 days  |
 
 \*Rough figures for one developer working with Claude. Phases 1–2 together make a
 usable product.
@@ -178,12 +181,12 @@ usable product.
 
 ## 9. Key decisions and risks
 
-| Risk | Mitigation |
-|---|---|
-| Browser storage gets evicted, so data is lost | Call `navigator.storage.persist()`; show "last backup N days ago" with a one-click export. With no sync, backups are the only safety net |
-| Search slows down with large notes | MiniSearch handles thousands of notes; build the index in a Web Worker if needed |
-| Card review history breaks when notes are edited | Use stable hash keys (§5) and keep orphaned cards for 30 days |
-| Unsafe HTML in Markdown | Always sanitise with DOMPurify |
+| Risk                                             | Mitigation                                                                                                                               |
+| ------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| Browser storage gets evicted, so data is lost    | Call `navigator.storage.persist()`; show "last backup N days ago" with a one-click export. With no sync, backups are the only safety net |
+| Search slows down with large notes               | MiniSearch handles thousands of notes; build the index in a Web Worker if needed                                                         |
+| Card review history breaks when notes are edited | Use stable hash keys (§5) and keep orphaned cards for 30 days                                                                            |
+| Unsafe HTML in Markdown                          | Always sanitise with DOMPurify                                                                                                           |
 
 ## 10. Next steps after approval
 
