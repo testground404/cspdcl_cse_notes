@@ -1,6 +1,6 @@
 # Note Management App: Plan
 
-Status: draft, waiting for review · Repo: `cspdcl_cse_notes`
+Status: approved (decisions in §2), Phase 0 in progress · Repo: `cspdcl_cse_notes`
 
 ## 1. Goal
 
@@ -19,12 +19,18 @@ this well. This app should:
 - Native mobile apps (the PWA covers mobile)
 - Rich WYSIWYG editing (Markdown with live preview is enough)
 
-## 2. Assumptions (please confirm, see §11)
+## 2. Decisions (confirmed 2026-10-10)
 
-1. The app is for a single user at first and might be shared with a few friends later.
-2. It must work offline. Cloud sync is useful but can wait.
-3. It runs in a web browser on desktop and Android. No app-store release.
-4. Notes are Markdown, with math (LaTeX) and code blocks, because CSE notes
+1. **Platform:** browser only (installable PWA). No desktop or native app.
+2. **Sync:** not needed for now. All data stays in the browser; export/backup
+   covers moving data between devices.
+3. **Users:** single user. No login or sharing.
+4. **Existing notes:** importing uploaded files (PDF/Word) may be needed later,
+   so it is in the backlog (F15), not in v1.
+5. **Syllabus:** the user will share the official CSPDCL syllabus; the seed in §3
+   is a placeholder until then.
+6. **Stack:** no preference, so the stack in §4 stands.
+7. Notes are Markdown, with math (LaTeX) and code blocks, because CSE notes
    need both (complexity analysis, SQL, C/Java snippets, automata).
 
 ## 3. Features
@@ -43,7 +49,8 @@ this well. This app should:
 | F10 | PYQ bank: store questions with year and answer, linked to topics; a practice mode | P1 |
 | F11 | Links between notes (`[[Note title]]`) and a list of backlinks | P2 |
 | F12 | Print/PDF export of a subject as a revision booklet | P2 |
-| F13 | Optional cloud sync across devices plus login | P2 |
+| F13 | Cloud sync across devices plus login (deferred; not planned) | — |
+| F15 | Import uploaded files: PDF/Word text extraction into notes, PDFs kept as attachments | P2 |
 | F14 | Dark mode and keyboard shortcuts (`Ctrl+K` search, `Ctrl+N` new note) | P1 |
 
 ### Pre-seeded syllabus (editable)
@@ -56,8 +63,8 @@ The user should check this list against the official CSPDCL notification.
 ## 4. Recommended architecture
 
 **Local-first Progressive Web App.** Everything is stored in the browser
-(IndexedDB), so the app works offline and runs fast. Sync comes later as an
-add-on (Phase 4) and does not require a rewrite.
+(IndexedDB), so the app works offline and runs fast. Sync is out of scope for now; IDs and
+timestamps are chosen so it could be added later without a rewrite.
 
 ```
 ┌──────────────────────── Browser (PWA) ────────────────────────┐
@@ -69,9 +76,6 @@ add-on (Phase 4) and does not require a rewrite.
 │  Data layer: repository interface ──► Dexie (IndexedDB)        │
 │  Service worker (vite-plugin-pwa): offline cache              │
 └────────────────────────────────────────────────────────────────┘
-                 │ (Phase 4, optional)
-                 ▼
-        Sync backend: Supabase (Postgres + Auth + Storage)
 ```
 
 ### Tech stack
@@ -79,7 +83,7 @@ add-on (Phase 4) and does not require a rewrite.
 | Concern | Choice | Why |
 |---|---|---|
 | Build | Vite + TypeScript | Fast and simple; easy static hosting |
-| UI | React 18 + Tailwind CSS | Common choice with many components available |
+| UI | React + Tailwind CSS | Common choice with many components available |
 | Editor | CodeMirror 6 (Markdown mode) | Lightweight, works well on mobile, supports Vim keys if wanted |
 | Rendering | markdown-it + KaTeX + highlight.js, sanitised with DOMPurify | Handles math and code; output is safe |
 | Storage | Dexie.js over IndexedDB | Typed tables, indexes and schema migrations |
@@ -90,7 +94,6 @@ add-on (Phase 4) and does not require a rewrite.
 | Testing | Vitest + Testing Library, Playwright for e2e | |
 | Lint/format | ESLint + Prettier | |
 | Hosting | GitHub Pages or Netlify (static) | Free; deploys from CI |
-| Sync (later) | Supabase | Free tier; Postgres row-level security for each user's data |
 
 **Alternatives I considered:**
 - Keeping plain Markdown files in this repo and building a static site (MkDocs or
@@ -159,7 +162,7 @@ text as a stable key so review history survives edits.
 | **1. Core notes (MVP)** | F1, F2, F3, F5, F14 (basic): Dexie schema, syllabus seed, tree sidebar, editor with preview, autosave, tags, soft delete and trash | I can write all my OS notes offline and they are still there after a reload | 3–4 days |
 | **2. Find & keep** | F4 search palette and filters, F6 export/import (MD/ZIP/JSON), PWA install and offline | Searching finds any note in under 100 ms; a backup restores everything exactly | 2 days |
 | **3. Revise** | F7 progress dashboard, F8 card parser, F9 SM-2 review queue, F10 PYQ bank and practice | A daily review session works from start to finish; the dashboard shows % covered per subject | 3–4 days |
-| **4. Extras** | F11 backlinks, F12 PDF booklet, F13 Supabase sync and auth | Notes sync between laptop and phone | 3–5 days |
+| **4. Extras** | F11 backlinks, F12 PDF booklet, F15 file import | A PDF can be uploaded and turned into a note | 3–4 days |
 
 \*Rough figures for one developer working with Claude. Phases 1–2 together make a
 usable product.
@@ -177,10 +180,9 @@ usable product.
 
 | Risk | Mitigation |
 |---|---|
-| Browser storage gets evicted, so data is lost | Call `navigator.storage.persist()`; show "last backup N days ago" with a one-click export; sync in Phase 4 |
+| Browser storage gets evicted, so data is lost | Call `navigator.storage.persist()`; show "last backup N days ago" with a one-click export. With no sync, backups are the only safety net |
 | Search slows down with large notes | MiniSearch handles thousands of notes; build the index in a Web Worker if needed |
 | Card review history breaks when notes are edited | Use stable hash keys (§5) and keep orphaned cards for 30 days |
-| Sync conflicts (Phase 4) | Last-write-wins per note using `updatedAt`, keeping the losing version as history |
 | Unsafe HTML in Markdown | Always sanitise with DOMPurify |
 
 ## 10. Next steps after approval
@@ -188,11 +190,6 @@ usable product.
 1. Phase 0 scaffold and CI on branch `claude/relaxed-tesla-n6bv51`.
 2. Phase 1 in small PRs: db layer → syllabus tree → editor → tags.
 
-## 11. Open questions for you
+## 11. Open items
 
-1. **Platform:** is a browser PWA enough, or do you need a desktop app (Tauri/Electron) or an Android app?
-2. **Sync:** do you need notes on several devices from day one? (This decides whether Supabase moves to Phase 1.)
-3. **Users:** is this just for you, or will classmates share and edit notes too?
-4. **Existing notes:** do you already have notes (PDF, Word, handwritten, OneNote) that need importing?
-5. **Syllabus:** can you share the official CSPDCL syllabus PDF so the seed matches it exactly?
-6. **Stack preference:** any language or framework you'd rather use or learn (e.g. Flutter, Django)?
+1. Official CSPDCL syllabus from the user → replace `src/seed/syllabus.json`.
