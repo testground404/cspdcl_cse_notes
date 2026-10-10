@@ -8,6 +8,7 @@ import { ChildList } from '../features/nodes/ChildList'
 import { NodeHeader } from '../features/nodes/NodeHeader'
 import { TopicNote } from '../features/notes/TopicNote'
 import { Sidebar } from '../features/sidebar/Sidebar'
+import { TreePanel } from '../features/tree/TreePanel'
 import { QuestionBankPage } from '../features/tests/QuestionBankPage'
 import { TestsPage } from '../features/tests/TestsPage'
 import { ui } from '../ui/styles'
@@ -108,6 +109,7 @@ export default function App() {
           <Sidebar route={route} syllabus={syllabus} onNavigate={() => setMenuOpen(false)} />
         )}
       </nav>
+      {loaded && <TreePanel route={route} syllabus={syllabus} />}
       <div className="flex min-w-0 flex-1 flex-col">
         <div className="flex items-center gap-2 px-4 pt-3 md:hidden">
           <button
@@ -119,7 +121,7 @@ export default function App() {
             <MenuIcon size={20} strokeWidth={1.75} />
           </button>
         </div>
-        <main className="min-h-0 flex-1 overflow-y-auto px-5 pt-6 pb-24 md:px-12 md:pt-12">
+        <main className="min-h-0 flex-1 overflow-y-auto px-5 pt-6 pb-24 md:px-10 md:pt-12">
           <div className="mx-auto max-w-5xl">
             {loaded &&
               (route.page === 'node' ? (

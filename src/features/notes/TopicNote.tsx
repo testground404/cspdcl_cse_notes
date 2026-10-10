@@ -237,7 +237,7 @@ export function TopicNote({
         {renderHeader(headerActions)}
 
         {!editing && outline && (
-          <details className="mb-6 xl:hidden">
+          <details className="mb-6 2xl:hidden">
             <summary className={`${ui.sectionLabel} cursor-pointer`}>On this page</summary>
             <div className="mt-2">{outline}</div>
           </details>
@@ -313,7 +313,7 @@ export function TopicNote({
       </div>
 
       {!editing && outline && (
-        <aside className="sticky top-0 hidden w-52 shrink-0 self-start pt-16 xl:block">
+        <aside className="sticky top-0 hidden w-52 shrink-0 self-start pt-16 2xl:block">
           {outline}
         </aside>
       )}
