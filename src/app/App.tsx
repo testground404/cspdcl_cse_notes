@@ -1,4 +1,3 @@
-import { Menu as MenuIcon } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { CHILD_KIND } from '../db/db'
 import { seedIfEmpty } from '../db/seed'
@@ -7,7 +6,7 @@ import { HighlightsPage } from '../features/highlights/HighlightsPage'
 import { ChildList } from '../features/nodes/ChildList'
 import { NodeHeader } from '../features/nodes/NodeHeader'
 import { TopicNote } from '../features/notes/TopicNote'
-import { Sidebar } from '../features/sidebar/Sidebar'
+import { TopBar } from '../features/header/TopBar'
 import { TreePanel } from '../features/tree/TreePanel'
 import { QuestionBankPage } from '../features/tests/QuestionBankPage'
 import { TestsPage } from '../features/tests/TestsPage'
@@ -75,7 +74,6 @@ export default function App() {
   const route = useRoute()
   const syllabus = useSyllabus()
   const [ready, setReady] = useState(false)
-  const [menuOpen, setMenuOpen] = useState(false)
 
   useEffect(() => {
     void navigator.storage?.persist?.()
@@ -91,37 +89,11 @@ export default function App() {
   const loaded = ready && syllabus
 
   return (
-    <div className="flex h-full bg-canvas text-ink">
-      {menuOpen && (
-        <div
-          className="fixed inset-0 z-10 bg-black/20 md:hidden"
-          onClick={() => setMenuOpen(false)}
-          aria-hidden
-        />
-      )}
-      <nav
-        aria-label="Sidebar"
-        className={`${
-          menuOpen ? 'translate-x-0' : '-translate-x-full'
-        } fixed inset-y-0 left-0 z-20 w-72 bg-panel px-3 py-4 transition-transform duration-150 md:static md:w-64 md:translate-x-0`}
-      >
-        {loaded && (
-          <Sidebar route={route} syllabus={syllabus} onNavigate={() => setMenuOpen(false)} />
-        )}
-      </nav>
-      {loaded && <TreePanel route={route} syllabus={syllabus} />}
-      <div className="flex min-w-0 flex-1 flex-col">
-        <div className="flex items-center gap-2 px-4 pt-3 md:hidden">
-          <button
-            type="button"
-            className="rounded-md p-1.5 text-muted hover:bg-hover"
-            onClick={() => setMenuOpen(true)}
-            aria-label="Open menu"
-          >
-            <MenuIcon size={20} strokeWidth={1.75} />
-          </button>
-        </div>
-        <main className="min-h-0 flex-1 overflow-y-auto px-5 pt-6 pb-24 md:px-10 md:pt-12">
+    <div className="flex h-full flex-col bg-canvas text-ink">
+      <TopBar route={route} syllabus={loaded ? syllabus : undefined} />
+      <div className="flex min-h-0 flex-1">
+        {loaded && <TreePanel route={route} syllabus={syllabus} />}
+        <main className="min-h-0 min-w-0 flex-1 overflow-y-auto px-5 pt-6 pb-24 md:px-12 md:pt-10">
           <div className="mx-auto max-w-5xl">
             {loaded &&
               (route.page === 'node' ? (

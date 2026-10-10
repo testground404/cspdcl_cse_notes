@@ -21,16 +21,19 @@ settings). The site is at https://testground404.github.io/cspdcl_cse_notes/.
 
 ## Using the app
 
-The sidebar has three sections:
+The top bar has three entries:
 
 - **Highlights**: text marked with `==…==` in notes (select text while editing and press
   Highlight or `Ctrl+Shift+H`), plus standalone key points. The Highlights page groups them
   by subject; clicking one jumps to it.
 - **Tests**: build your own multiple-choice **question bank**, then take tests on any
   subject, unit, chapter or topic. Results are saved.
-- **Notes**: **Subject → Unit → Chapter → Topic**. Each topic has one Markdown note that
-  opens in Read mode; its `##` headings are the topic's **subtopics**. Notes support math
-  (`$x^2$`, `$$...$$`) and fenced code blocks.
+- **Notes**: hover (or click) it to pick a subject. A column on the left then shows that
+  subject's **Units → Chapters → Topics**, and the topic's note opens to its right. Each topic
+  has one Markdown note that opens in Read mode; its `##` headings are the topic's
+  **subtopics**. Notes support math (`$x^2$`, `$$...$$`) and fenced code blocks.
+
+Backup, Restore and the light/dark toggle are at the right end of the top bar.
 
 Notes can use the full study-note format: a `---` metadata block at the top (hidden when
 reading), callout boxes (`> **Define:** …`), tables, Mermaid diagrams (` ```mermaid `), and
