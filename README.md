@@ -32,6 +32,12 @@ The sidebar has three sections:
   opens in Read mode; its `##` headings are the topic's **subtopics**. Notes support math
   (`$x^2$`, `$$...$$`) and fenced code blocks.
 
+Notes can use the full study-note format: a `---` metadata block at the top (hidden when
+reading), callout boxes (`> **Define:** …`), tables, Mermaid diagrams (` ```mermaid `), and
+question/answer pairs (`Q: …` then `A: …`, or `**Recall:**` then `**Answer:**`) whose answers sit
+behind a "Show answer" button. The example topic, Machine Learning › Definition and scope, shows
+all of these (its source is `src/seed/ml-definition-and-scope.md`).
+
 Everything is saved automatically in the browser (IndexedDB). Use **Backup** (bottom of the
 sidebar) to download a JSON file and **Restore** to load one; clearing browser data deletes
 your notes.

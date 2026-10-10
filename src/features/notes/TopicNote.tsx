@@ -1,6 +1,6 @@
 import { useLiveQuery } from 'dexie-react-hooks'
 import { Highlighter, Pencil, X } from 'lucide-react'
-import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { db } from '../../db/db'
 import { addKeyPoint, deleteKeyPoint, saveNote } from '../../db/repo'
 import {
@@ -9,8 +9,10 @@ import {
   renderInlineMarkdown,
   renderMarkdown,
 } from '../../lib/markdown'
+import { renderDiagrams } from '../../lib/diagrams'
 import { toggleHighlight } from '../../lib/editing'
 import { nodeHref } from '../../app/route'
+import { useCurrentTheme } from '../../app/theme'
 import { ui } from '../../ui/styles'
 import { AddForm } from '../nodes/AddForm'
 
@@ -112,6 +114,12 @@ export function TopicNote({
   const html = useMemo(() => (body === null ? '' : renderMarkdown(body)), [body])
   const subtopics = useMemo(() => (body === null ? [] : extractSubtopics(body)), [body])
 
+  // Draw any ```mermaid diagrams. Layout effect so cached diagrams do not flash as code.
+  const theme = useCurrentTheme()
+  useLayoutEffect(() => {
+    if (contentRef.current) void renderDiagrams(contentRef.current, theme)
+  }, [html, mode, theme])
+
   if (body === null) return <p className={ui.muted}>Loading…</p>
 
   const highlightSelection = () => {
@@ -209,7 +217,7 @@ export function TopicNote({
           <li key={`${s.slug}-${i}`}>
             <a
               href={nodeHref(topicId, s.slug)}
-              className={`-ml-px block border-l py-0.5 pl-3 ${
+              className={`-ml-px block border-l py-0.5 ${s.level === 3 ? 'pl-6 text-[12.5px]' : 'pl-3'} ${
                 subtopic === s.slug
                   ? 'border-ink text-ink'
                   : 'border-transparent text-muted hover:text-ink'

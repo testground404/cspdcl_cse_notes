@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useSyncExternalStore } from 'react'
 
 export type Theme = 'light' | 'dark'
 const THEME_KEY = 'theme'
@@ -30,4 +30,19 @@ export function useTheme(): [Theme, () => void] {
     setTheme(next)
   }
   return [theme, toggle]
+}
+
+function subscribeToTheme(onChange: () => void) {
+  const observer = new MutationObserver(onChange)
+  observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] })
+  return () => observer.disconnect()
+}
+
+/** The theme currently applied to the page, updating whenever it is toggled. */
+export function useCurrentTheme(): Theme {
+  return useSyncExternalStore(
+    subscribeToTheme,
+    () => (document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light'),
+    () => 'light',
+  )
 }

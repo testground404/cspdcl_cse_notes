@@ -18,6 +18,7 @@ import {
 import { seedIfEmpty } from './seed'
 
 beforeEach(async () => {
+  localStorage.clear()
   await Promise.all(
     [db.nodes, db.notes, db.keyPoints, db.questions, db.attempts].map((t) => t.clear()),
   )
@@ -88,12 +89,43 @@ describe('backup', () => {
   })
 })
 
-test('seedIfEmpty seeds once', async () => {
-  await seedIfEmpty()
-  const count = await db.nodes.count()
-  expect(count).toBeGreaterThan(10)
-  await seedIfEmpty()
-  expect(await db.nodes.count()).toBe(count)
+describe('seedIfEmpty', () => {
+  test('a fresh database gets the placeholder subjects and the Machine Learning example, once', async () => {
+    await seedIfEmpty()
+    const subjects = await getChildren(null)
+    expect(subjects[0].name).toBe('Machine Learning')
+    expect(subjects.length).toBeGreaterThan(10)
+    const topic = (await db.nodes.where('kind').equals('topic').toArray())[0]
+    expect((await getPath(topic.id)).map((n) => n.name)).toEqual([
+      'Machine Learning',
+      'Unit 0',
+      'Chapter 1',
+      'Definition and scope',
+    ])
+    expect((await db.notes.get(topic.id))?.body).toMatch(/^---\r?\nid: U0\.C1\.T1/)
+    expect(await db.keyPoints.count()).toBeGreaterThan(0)
+    expect(await db.questions.count()).toBeGreaterThan(0)
+
+    const count = await db.nodes.count()
+    await seedIfEmpty()
+    expect(await db.nodes.count()).toBe(count)
+  })
+
+  test('an existing database gets the example added once, before its own subjects', async () => {
+    await addNode(null, 'DBMS')
+    await seedIfEmpty()
+    expect((await getChildren(null)).map((n) => n.name)).toEqual(['Machine Learning', 'DBMS'])
+    await seedIfEmpty()
+    expect(await getChildren(null)).toHaveLength(2)
+  })
+
+  test('a deleted example does not come back', async () => {
+    await seedIfEmpty()
+    await deleteNode((await getChildren(null))[0].id)
+    const count = await db.nodes.count()
+    await seedIfEmpty()
+    expect(await db.nodes.count()).toBe(count)
+  })
 })
 
 describe('question bank and key points', () => {

@@ -83,7 +83,10 @@ export function Sidebar({
   const highlights = useHighlights()
   const subtopicsByTopic = useLiveQuery(async () => {
     const notes = await db.notes.toArray()
-    return new Map(notes.map((n) => [n.topicId, extractSubtopics(n.body)]))
+    // The sidebar lists only the main sections (##); the page outline also shows ### headings.
+    return new Map(
+      notes.map((n) => [n.topicId, extractSubtopics(n.body).filter((s) => s.level === 2)]),
+    )
   }, [])
   const attempts = useLiveQuery(
     () => db.attempts.orderBy('finishedAt').reverse().limit(3).toArray(),
@@ -95,9 +98,11 @@ export function Sidebar({
   const selectedId = route.page === 'node' ? route.nodeId : null
   const selectedSubtopic = route.page === 'node' ? route.subtopic : null
 
-  // Open whatever is selected and its ancestors, so it and its children are visible.
+  // Open the selected item's ancestors so it is visible; open the item itself only when one of
+  // its subtopics is selected.
   const selectedPath = syllabus.path(selectedId).map((n) => n.id)
-  const missing = selectedPath.filter((id) => !expanded.has(id))
+  const wanted = selectedSubtopic ? selectedPath : selectedPath.slice(0, -1)
+  const missing = wanted.filter((id) => !expanded.has(id))
   if (missing.length) {
     const next = new Set([...expanded, ...missing])
     writeLocal(EXPANDED_KEY, [...next])
